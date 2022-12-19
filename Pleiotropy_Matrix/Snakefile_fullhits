@@ -1,0 +1,46 @@
+# Courtney Smith and Satu Strausz - HLA project
+traits = list(map(lambda x: x.strip(), open("/oak/stanford/groups/pritch/users/strausz/hla/hlatraits.txt").readlines()))
+
+DIR = "/oak/stanford/groups/pritch/users/strausz/finngen_R8_sumstats/"
+
+print(traits)
+
+rule all:
+    input:
+        expand(DIR + "filtered2/finngen_R8_{trait}_filt185hits.gz", trait=traits),
+        DIR + "matrix/filt185hits_wide.txt",
+        #DIR + "figures/heatmap_185hits_alltraits.pdf",
+    output:
+        "done.txt"
+    shell:
+        "touch {output}"
+
+rule filt:
+    input:
+        var = "/oak/stanford/groups/pritch/users/strausz/finngen_R8_sumstats/traits/ref_alt.txt",
+        sumstats = DIR + "finngen_R8_{trait}.gz",
+    params:
+        run_time="1:00:00",
+        cores="1",
+        memory="4G",
+        partition="pritch,owners",
+        job_name="filt"
+    output:
+        DIR + "filtered2/finngen_R8_{trait}_filt185hits.gz"
+    shell:
+        "zgrep -iFwf {input.var} {input.sumstats} | gzip -c > {output}"
+
+rule make_matrix:
+    input:
+        filtsumstats = expand(DIR + "filtered2/finngen_R8_{trait}_filt185hits.gz", trait=traits),
+    params:
+        run_time="1:00:00",
+        cores="1",
+        memory="50G",
+        partition="pritch,owners",
+        job_name="matrix",
+    output:
+        long = DIR + "matrix/filt185hits_long.txt",
+        wide = DIR + "matrix/filt185hits_wide.txt",
+    shell:
+        "Rscript /oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/make_matrix_fullhits.R {input.filtsumstats} {output.long} {output.wide}; "
