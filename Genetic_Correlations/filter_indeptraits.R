@@ -37,9 +37,13 @@ keep2 <- c(keep2, item) # add to list of kept traits
 # Combine
 keep <- unique(c(keep1,keep2))
 
+# Convert to dataframe and add names
+keep <- data.frame(V1=unlist(keep))
+keep$V2 <- gsub(".sumstats.gz","",gsub(".*./","",as.character(keep$V1)))
+
 # Write output
 OUTPUT_FILE="/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/results/independent_traits.tsv"
-write.table(keep, OUTPUT_FILE, quote=F, sep="\t", row.names=F, col.names=T)
+write.table(keep, OUTPUT_FILE, quote=F, sep="\t", row.names=F, col.names=F)
 
 ### CHECKING to make sure it worked
 # Remake original df_wide

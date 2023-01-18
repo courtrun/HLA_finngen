@@ -1,5 +1,5 @@
 # Courtney Smith and Satu Strausz - HLA project - Make Matrix
-# Script started 8-2-2022
+# Script started 1-18-2023
 # Goal of script: Make matrix of clumped hits by traits
 # Called in snakemake script by rule make_matrix
 
@@ -10,7 +10,7 @@ args = commandArgs(trailingOnly=TRUE)
 # Combine hits for all traits
 my.list <- list()
 for (i in 1:(length(args)-2)){
-Trait_name=gsub("_filt185hits.gz","",gsub(".*finngen_R8_","",commandArgs(TRUE)[i]))
+Trait_name=gsub("_filt428hits.gz","",gsub(".*filtered/","",commandArgs(TRUE)[i]))
 temp <- data.table::fread(commandArgs(TRUE)[i],fill=TRUE)
 colnames(temp) <- c("chr","pos","ref","alt","rsids","nearest_genes","pval","mlogp","beta","sebeta","af_alt","af_alt_cases","af_alt_controls")
 my.list[[i]] <- temp %>% mutate(TraitName=Trait_name,ID=paste0("chr",chr,"_",pos,"_",ref,"_",alt)) %>% select(ID,rsids,pval,beta,sebeta,TraitName) %>%
