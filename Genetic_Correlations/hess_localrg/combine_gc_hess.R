@@ -13,7 +13,7 @@ c$p2 <- gsub(".*munged/","",c$p2)
 c$p2 <- gsub(".sumstats.*","",c$p2)
 
 c <- c %>% select(p1,p2,gcov_int) %>% rename(pheno_cor=gcov_int) # note: can just use gcov_int bc sample size are same and full overlap
-c <- c %>% mutate(pheno_cor_bound = ifelse(pheno_cor > 1,1,ifelse(pheno_cor < 0,0,pheno_cor)))
+c <- c %>% mutate(pheno_cor_bound = ifelse(pheno_cor > 1,1,ifelse(pheno_cor < -1,1,pheno_cor)))
 
 OUTPUT_FILE=commandArgs(TRUE)[2]
 write.table(c, OUTPUT_FILE, quote=F, sep="\t", row.names=F, col.names=T)
