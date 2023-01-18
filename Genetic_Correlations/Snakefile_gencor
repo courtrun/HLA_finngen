@@ -1,0 +1,155 @@
+# Courtney Smith - BOLT-LMM - Snakemake
+# Script started 12-5-2022
+# Goal of script: Calculate genetic correlations on finngen traits
+
+import pandas
+import os.path
+import glob
+import math
+
+# Set path locations
+DIR="/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/"
+PHENOTYPES_LIST = "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/traits.txt" # list of metabolite names # custom_metabolite_list.txt, metabolite_list.txt
+gwas = pandas.read_csv(PHENOTYPES_LIST,names=["name"])
+gwas.set_index("name", inplace=True)
+gwas2 = pandas.read_csv(PHENOTYPES_LIST,names=["name2"])
+gwas2.set_index("name2", inplace=True)
+OUTPUT_PATH="/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/results/"
+PLINK="plink" # Remember to run ml plink/1.905b and ml bedtools and ml R before starting
+
+shell.executable("/usr/bin/bash")
+shell.prefix("source ~/.bashrc; ")
+
+CHROMS= [str(c) for c in range(1, 23)] # chromosome numbers 1 through 22
+
+# The path used for the clumping
+CLUMP_BED_PATH="/oak/stanford/groups/pritch/scratch.copy/groups/pritch/nasa/tools/ldsc/1000G_EUR_Phase3_plink/mymerge" # could have issue with matching IDs, if so let Nasa know
+# /oak/stanford/groups/pritch/users/nasa/biomarkers/ukb_imp_v3.info03.maf001.reassessment.white_british
+
+rule all:
+    input:
+        expand("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/munged/{name}.sumstats.gz", name=[str(s) for s in gwas.index]),
+        expand("/scratch/groups/pritch/courtrun/hla/gen_cor/{name}-{name2}_genetic_cor.log", name=[str(s) for s in gwas.index], name2=[str(t) for t in gwas2.index]),
+        "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/results/combined_gen_cor_sumstats.txt",
+        "/oak/stanford/groups/pritch/users/courtrun/projects/hla/figures/LDSC.gencorrplot.corrplot.pdf",
+    params:
+        error_out_file="error_files/ldsc_summarize",
+        out_file="out_files/ldsc_summarize",
+        run_time="00:10:00",
+        cores="1",
+        memory="4G",
+        job_name="summarize_ldsc"
+    output:
+        "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gen_cor/results/processed_bolt.txt"
+    shell:
+        "echo yay"
+
+rule filter_plink: # filters to MAF 1% and info score >0.7 and merges in the rsIDs
+    input:
+        "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/{name}.gz"
+    output:
+        "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/filtered/{name}.glm.filtered.maf01.info07.tsv.gz"
+    params:
+        run_time="4:00:00",
+        cores="1",
+        memory="50G",
+        job_name="filterMAF",
+    shell:
+        "Rscript /oak/stanford/groups/pritch/projects/nightingale/scripts/genetics/bolt_gwas/mfs.R {input} {output}"
+
+rule clump_plink: # take strongest associated variant and gets rid of everything else with r2 > 0.01 and within 1 megabase
+    input:
+        "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/filtered/{name}.glm.filtered.maf01.info07.tsv.gz"
+    params:
+        run_time="36:00:00",
+        cores="1",
+        memory="46G",
+        partition="pritch,owners",
+        job_name="clump_plink",
+        prefix='/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/clumped/{name}'
+    output:
+        "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/clumped/{name}.clumped"
+    shell:
+        "" + PLINK + " --bfile {CLUMP_BED_PATH} --clump {input} --clump-p1 1e-4 --clump-p2 1e-4 --clump-r2 0.01 --clump-kb 1000 --out {params.prefix} --clump-field P --clump-snp-field SNP"
+
+rule hits: # takes clumped file and converts that to a hit file which is in format with columns in original file and filters it to GWAS hits and outputs that as a separate file
+    input:
+        sumstats = "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/filtered/{name}.glm.filtered.maf01.info07.tsv.gz",
+        clump = "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/clumped/{name}.clumped"
+    params:
+        run_time="12:00:00",
+        cores="1",
+        memory="30G",
+        partition="pritch,owners",
+        job_name="hits"
+    output:
+        all = "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/hits/{name}.hits",
+        lt5e8 = "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/hits5e8/{name}.hits"
+    shell:
+        "zgrep -Ff <(awk '{{print $3;}}' {input.clump} |  grep -v '^$' | sed 's/$/\t/') {input.sumstats} > {output.all}; "
+        "awk '($NF < 5e-8 || NR == 1)' {output.all} > {output.lt5e8}"
+        #"zgrep -Ff <(awk '($5 < 5e-8) {{print $3;}}' {input.clump} |  grep -v '^$' | sed 's/$/\t/') {input.sumstats} > {output.lt5e8}"
+
+rule munge_sumstats:
+    input:
+        sumstats = "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/{name}.gz",
+        snps = "/oak/stanford/groups/pritch/users/courtrun/software/ldsc/w_hm3.snplist",
+        ld_dir= "/oak/stanford/groups/pritch/users/courtrun/software/ldsc",
+    params:
+        run_time="1:00:00",
+        cores="1",
+        memory="46G",
+        partition="pritch,owners",
+        job_name="munge_sumstats",
+        prefix='/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/munged/{name}'
+    output:
+        "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/munged/{name}.sumstats.gz"
+    shell:
+        "source activate ldsc; python {input.ld_dir}/munge_sumstats.py --sumstats {input.sumstats} --out {params.prefix} --N 412181 --merge-alleles {input.snps} --snp rsids --a1 alt --a2 ref"
+
+rule ldsc_genetic_correlation:
+    input:
+        ld_dir = "/oak/stanford/groups/pritch/users/courtrun/software/ldsc",
+        munged_sumstats1 = "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/munged/{name}.sumstats.gz",
+        munged_sumstats2 = "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/munged/{name2}.sumstats.gz",
+    params:
+        run_time="12:00:00",
+        cores="1",
+        memory="46G",
+        partition="pritch,owners",
+        job_name="ldsc_genetic_correlation",
+        prefix = '/scratch/groups/pritch/courtrun/hla/gen_cor/{name}-{name2}_genetic_cor',
+    output:
+        "/scratch/groups/pritch/courtrun/hla/gen_cor/{name}-{name2}_genetic_cor.log",
+    shell:
+        "source activate ldsc; python {input.ld_dir}/ldsc.py --rg {input.munged_sumstats1},{input.munged_sumstats2} --ref-ld-chr {input.ld_dir}/eur_w_ld_chr/ --w-ld-chr {input.ld_dir}/eur_w_ld_chr/ --out {params.prefix}"
+
+rule combine_ldsc_genetic_correlations:
+    input:
+        gen_cor = expand('/scratch/groups/pritch/courtrun/hla/gen_cor/{name}-{name2}_genetic_cor.log', name=[str(s) for s in gwas.index], name2=[str(t) for t in gwas2.index]),
+    params:
+        run_time="1:00:00",
+        cores="1",
+        memory="46G",
+        partition="pritch,owners",
+        job_name="combine_ldsc_genetic_correlations",
+    output:
+        "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/results/combined_gen_cor_sumstats.txt",
+    shell:
+        "bash /oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/combine_gen_cor.sh"
+
+rule plot_ldsc_genetic_correlations:
+    input:
+        gencor = "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/results/combined_gen_cor_sumstats.txt",
+        trts = "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/results/independent_traits_list.tsv",
+        an = "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/results/traits_annotation.tsv",
+    params:
+        run_time="1:00:00",
+        cores="1",
+        memory="46G",
+        partition="pritch,owners",
+        job_name="plot_ldsc_genetic_correlations",
+    output:
+        "/oak/stanford/groups/pritch/users/courtrun/projects/hla/figures/LDSC.gencorrplot.corrplot.pdf"
+    shell:
+        "Rscript /oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/plot_gen_cor.R {input.gencor} {input.trts} {input.an} {output}"
