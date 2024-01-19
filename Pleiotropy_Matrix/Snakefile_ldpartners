@@ -1,0 +1,64 @@
+# Courtney Smith and Satu Strausz - HLA project
+traits = list(map(lambda x: x.strip(), open("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/results/independent_traits_list.tsv").readlines()))
+
+DIR = "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/"
+
+print(traits)
+
+rule all:
+    input:
+        expand(DIR + "filtered/{trait}_filt428hits_ldpartners.gz", trait=traits),
+        DIR + "matrix/filt428hits_wide_ldpartners.txt",
+        "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/pheat_428fullhits_alltraits_pos_ldpartners.png",
+    output:
+        "done.txt"
+    shell:
+        "touch {output}"
+
+rule filt:
+    input:
+        var = "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/hits/R10_HLAhits_refalt_ID_ldpartners.txt",
+        sumstats = DIR + "{trait}.gz",
+    params:
+        run_time="1:00:00",
+        cores="1",
+        memory="4G",
+        partition="pritch,owners",
+        job_name="filt"
+    output:
+        DIR + "filtered/{trait}_filt428hits_ldpartners.gz"
+    shell:
+        "zgrep -iFwf {input.var} {input.sumstats} | gzip -c > {output}"
+
+rule make_matrix:
+    input:
+        filtsumstats = expand(DIR + "filtered/{trait}_filt428hits_ldpartners.gz", trait=traits),
+    params:
+        run_time="1:00:00",
+        cores="1",
+        memory="50G",
+        partition="pritch,owners",
+        job_name="matrix",
+    output:
+        long = DIR + "matrix/filt428hits_long_ldpartners.txt",
+        wide = DIR + "matrix/filt428hits_wide_ldpartners.txt",
+    shell:
+        "Rscript /oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/make_matrix_fullhits.R {input.filtsumstats} {output.long} {output.wide}; "
+
+rule make_heatmap:
+    input:
+        matrix = "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/matrix/filt428hits_wide_ldpartners.txt",
+        an = "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/results/traits_annotation.tsv",
+        gene = "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/hits/R10_condit_results.txt",
+    params:
+        run_time="1:00:00",
+        cores="1",
+        memory="4G",
+        partition="pritch,owners",
+        job_name="filt"
+    output:
+        hm1 = "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/pheat_428fullhits_alltraits_ldpartners.png",
+        hm2 = "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/pheat_428fullhits_alltraits_pos_ldpartners.png",
+        matrix = "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/matrix/filt428fullhits_wide_stdz_ldpartners.txt",
+    shell:
+        "Rscript /oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/make_heatmap.R {input.matrix} {input.an} {input.gene} {output.hm1} {output.hm2} {output.matrix}"

@@ -52,8 +52,10 @@ my_palette <- colorRampPalette(c("blue", "white", "red"))(n = 100)
 # Create a Heatmap object
 splits = ncol(zsnpt)
 distv <- na.omit(pos$spacing)
-ht <- Heatmap(zsnpt,col = my_palette, cluster_rows = TRUE,cluster_columns = FALSE,column_gap=unit(distv, "mm"),column_split=c(1:splits),cluster_column_slices=FALSE,
-show_column_names = FALSE, show_row_names=FALSE)
+ht <- Heatmap(zsnpt,col = my_palette, cluster_rows = TRUE,cluster_columns = FALSE,
+column_gap=unit(distv, "mm"),column_split=c(1:splits),cluster_column_slices=FALSE,
+show_column_names = FALSE, show_row_names=FALSE,column_title=NULL,
+column_names_gp = gpar(fill = "gray"), show_row_dend = FALSE)
 png("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/428fullhits_alltraits_spaced_pos.png",width=6000,height=3000)
 ht
 dev.off()
