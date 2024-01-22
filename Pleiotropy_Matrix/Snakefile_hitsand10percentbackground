@@ -1,0 +1,45 @@
+# Courtney Smith and Satu Strausz - HLA project
+traits = list(map(lambda x: x.strip(), open("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/gencor/results/independent_traits_list.tsv").readlines()))
+
+DIR = "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/"
+
+print(traits)
+
+rule all:
+    input:
+        expand(DIR + "filtered/{trait}_filt428hitsw10percentbackground.gz", trait=traits),
+        DIR + "matrix/filt428hitsw10percentbackground_wide.txt",
+    output:
+        "done.txt"
+    shell:
+        "touch {output}"
+
+rule filt:
+    input:
+        var = "/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/hits/R10_HLAhitsand10percentbackground_refalt.txt",
+        sumstats = DIR + "{trait}.gz",
+    params:
+        run_time="1:00:00",
+        cores="1",
+        memory="4G",
+        partition="pritch,owners",
+        job_name="filt"
+    output:
+        DIR + "filtered/{trait}_filt428hitsw10percentbackground.gz"
+    shell:
+        "zgrep -iFwf {input.var} {input.sumstats} | gzip -c > {output}"
+
+rule make_matrix:
+    input:
+        filtsumstats = expand(DIR + "filtered/{trait}_filt428hitsw10percentbackground.gz", trait=traits),
+    params:
+        run_time="1:00:00",
+        cores="1",
+        memory="50G",
+        partition="pritch,owners",
+        job_name="matrix",
+    output:
+        long = DIR + "matrix/filt428hitsw10percentbackground_long.txt",
+        wide = DIR + "matrix/filt428hitsw10percentbackground_wide.txt",
+    shell:
+        "Rscript /oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/make_matrix_fullhits.R {input.filtsumstats} {output.long} {output.wide}; "

@@ -12,7 +12,8 @@ library(ggbiplot)
 library(forcats)
 library("pheatmap")
 
-full <- data.table::fread("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/matrix/filt428hits_wide.txt") #
+full <- data.table::fread("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/matrix/filt428hitsw10percentbackground_wide.txt") #
+colnames(full)=gsub("_filt428hitsw10percentbackground.gz","",gsub(".*filtered/","",colnames(full)))
 
 betas_full <- full %>% select(matches("^beta_"))
 colnames(betas_full) <- gsub("beta_","",colnames(betas_full))
@@ -55,7 +56,7 @@ distv <- na.omit(pos$spacing)
 ht <- Heatmap(zt,col = my_palette, cluster_rows = TRUE,cluster_columns = FALSE,
 show_column_names = FALSE, show_row_names=FALSE,column_title=NULL,
 show_row_dend = FALSE)
-png("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/428fullhits_alltraits_z2.png",width=6000,height=3000)
+png("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/428fullhits_alltraits_wbackground.png",width=6000,height=3000)
 ht
 dev.off()
 
@@ -64,7 +65,7 @@ ht <- Heatmap(zt,col = my_palette, cluster_rows = TRUE,cluster_columns = FALSE,
 column_gap=unit(distv, "mm"),column_split=c(1:splits),cluster_column_slices=FALSE,
 show_column_names = FALSE, show_row_names=FALSE,column_title=NULL,
 column_names_gp = gpar(fill = "gray"), show_row_dend = FALSE)
-png("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/428fullhits_alltraits_spaced_pos_z2.png",width=6000,height=3000)
+png("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/428fullhits_alltraits_spaced_pos_wbackground.png",width=6000,height=3000)
 ht
 dev.off()
 
@@ -113,6 +114,6 @@ ht <- Heatmap(zt,col = my_palette, cluster_rows = TRUE,cluster_columns = FALSE,
 column_split=bks,cluster_column_slices=FALSE,
 show_column_names = FALSE, show_row_names=FALSE,column_title=NULL,
 show_row_dend = FALSE)
-png("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/428fullhits_alltraits_spaced_z2_brokenbyblock.png",width=6000,height=3000)
+png("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/428fullhits_alltraits_spaced_wbackground_brokenbyblock.png",width=6000,height=3000)
 ht
 dev.off()
