@@ -1,10 +1,11 @@
 # Courtney Smith - Main Analysis
 # Started 3-14-2023
-# Make a barplot with breakdown of trait categories
+# Make a barplot with breakdown of trait categories for the FinnGen traits/classification, then manual classification of HLA-associated triats
 
 library(dplyr)
 library(ggplot2)
 
+## FinnGen trait classification breakdown
 an <- data.table::fread("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/R10_hla_results/R10_files/R10_trait_categories.txt") # Trait categories
 
 gan <- data.table::fread("/oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/enrichment/enrich_trait_group_annotations.txt")
@@ -32,7 +33,6 @@ p
 dev.off()
 
 ##### Plot with manual annotations
-#an <- data.table::fread("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/R10_hla_results/R10_files/R10_trait_categories.txt") # Trait categories
 an <- data.table::fread("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/R10_hla_results/R10_files/R10_trait_categories_v2.tsv") %>%
 select(-Organ)# Trait categories
 
@@ -65,6 +65,8 @@ p <- ggplot(count,aes(y=forcats::fct_reorder(Category,-order),x=n,fill=Category)
 png("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/R10_hla_results/R10_files/trait_categories_manual.png",width=750,height=680)
 p
 dev.off()
+
+## Same as above but by organ block
 
 count <- an %>% filter(Category=="Organ") %>% group_by(Subcategory) %>% count()
 count <- as.data.frame(count %>% arrange(Subcategory))

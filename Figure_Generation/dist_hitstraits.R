@@ -1,6 +1,6 @@
 # Courtney Smith - Main Analysis
 # Started 3-17-2023
-# Make a barplot with distribution of hits/traits
+# Make a ridgeline plot with distribution of hits by trait group
 
 library(dplyr)
 library(ggplot2)
@@ -43,76 +43,3 @@ ggplot(s, aes(x = pos, y = Category, fill= Category)) +
   labs(x="Genome Position",y="")+
   theme_minimal()
 ggsave("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/ridgeline_cat.png",bg="white")
-
-
-# Plot
-p <- ggplot(count,aes(x=Category,y=n,fill=Category)) +
-  geom_violin(width=1.1, show.legend = FALSE)+
-  geom_boxplot(width=0.1, show.legend = FALSE)+
-  xlab("Trait Group") +
-  ylab("Number of HLA hits") +
-  labs(fill="Trait Group")+
-  theme_classic()+
-  scale_fill_brewer(palette = "Paired",breaks=c("Autoimmune","Infection","Cardiometabolic","MSK","Neoplasm","Neuro", "Organ","Other"))+
-  theme(text = element_text(size = 25))+
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
-
-png("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/R10_hla_results/R10_files/trait_hits_violin.png",width=1500)
-p
-dev.off()
-
-# Plot
-countfilt <- count %>% filter(n>3)
-p <- ggplot(countfilt,aes(x=trait,y=n,fill=Category)) +
-  geom_bar(stat="identity") +
-  xlab("Traits") +
-  ylab("Number of HLA hits") +
-  labs(fill="Trait Group")+
-  geom_text(aes(label=n), position=position_dodge(width=0.9), vjust=-0.25)+
-  #geom_label_repel(aes(x=Category,y=n,label=paste0(n),fill="white"),size=5, show.legend = FALSE) + #, min.segment.length=unit(0,'lines'),force=10,segment.size=0.25)+
-  theme_classic()+
-  scale_fill_brewer(palette = "Paired",breaks=c("Autoimmune","Infection","Cardiometabolic","MSK","Neoplasm","Neuro", "Organ","Other"))+
-  theme(text = element_text(size = 16))+
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
-
-png("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/R10_hla_results/R10_files/trait_hitsfilt250.png",width=1200)
-p
-dev.off()
-
-p <- ggplot(s%>%mutate(snp="HLA hits"),aes(x=snp,y=n)) +
-  geom_violin()+
-  geom_boxplot(width=0.1)+
-  #xlab("HLA hits") +
-  ylab("Number of Associated traits") +
-  theme_classic()+
-  theme(text = element_text(size = 25))
-
-png("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/R10_hla_results/R10_files/hit_dist_violin.png")
-p
-dev.off()
-
-###
-p <- ggplot(count,aes(x=trait,y=n,fill=Category)) +
-  geom_bar(stat="identity") +
-  xlab("Traits") +
-  ylab("Number of HLA hits") +
-  labs(fill="Trait Group")+
-  geom_text(aes(label=n), position=position_dodge(width=0.9), vjust=-0.25, size=2)+
-  #geom_label_repel(aes(x=Category,y=n,label=paste0(n),fill="white"),size=5, show.legend = FALSE) + #, min.segment.length=unit(0,'lines'),force=10,segment.size=0.25)+
-  theme_classic()+
-  scale_fill_brewer(palette = "Paired",breaks=c("Autoimmune","Infection","Cardiometabolic","MSK","Neoplasm","Neuro", "Organ","Other"))+
-  theme(text = element_text(size = 16))+
-  theme(axis.title.x=element_blank(),
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank()) # element_text(angle = 45, vjust = 1, hjust=1))
-
-#png("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/R10_hla_results/R10_files/trait_hits.png",width=1500)
-#p
-#dev.off()
-
-##
-ggplot(s, aes(x = pos, y = type, fill = type)) + facet_wrap(~Category)+
-  geom_density_ridges(alpha = 0.7) +
-  scale_fill_viridis_d() +
-  theme_minimal()
-ggsave("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/ridgeline_typecat.png",bg="white")

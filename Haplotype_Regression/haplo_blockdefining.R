@@ -25,7 +25,7 @@ subregion2b_bounds <- c(filter(g,nearest_genes=="HLA-C")$start-100000,filter(g,n
 subregion3b_bounds <- c(filter(g,nearest_genes=="HLA-DRA")$start-100000,filter(g,nearest_genes=="HLA-DQB2")$stop+100000)
 
 #############
-Plot boundaries
+#Plot boundaries
 
 # Get min and max from the heatmap data snp positions
 pos <- data.table::fread("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/matrix/filt428hits_wide.txt")  %>% tidyr::separate(ID,sep="_",into=c("CHR","POS","A1","A2")) %>% select(POS)
@@ -55,15 +55,10 @@ ggsave("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/R10_hla_r
 
 #############
 
-
 # Create a ggplot object with the original data as lines
 p <- ggplot(df, aes(x = MIN_BP, y = factor(row.names(df)))) +
   geom_segment(aes(xend = MAX_BP, yend = factor(row.names(df))), size = 1, alpha = 0.7) +
   ylab("Line Number")
-
-#brewer.pal(n = 8, name = "Dark2")
-#brewer.pal(n = 8, name = "Paired")
-
 
 # Add the lines for each subregion in a different color
 p + geom_segment(aes(x = subregion1_bounds[1], xend = subregion1_bounds[2], y = 0, yend = 0),

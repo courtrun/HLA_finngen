@@ -44,11 +44,6 @@ t <- bind_rows(filter(an,!is.na(TAGS)),unlab)
 t$TAGS <- gsub("#","",t$TAGS)
 t <- t %>% rename(group=TAGS)
 
-# combine the related groups together (saving this to file to then look at in excel to make things easier)
-#OUTPUT_FILE="/oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/enrichment/trait_group_annotations.txt"
-#write.table(t %>% select(group,trait), OUTPUT_FILE, quote=F, sep="\t", row.names=F, col.names=T)
-#OUTPUT_FILE="/oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/enrichment/trait_groups.txt"
-#write.table(distinct(t %>% ungroup %>% select(group)), OUTPUT_FILE, quote=F, sep="\t", row.names=F, col.names=T)
 # then manually annotated and grouped, loading file below
 tg <- data.table::fread("/oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/enrichment/Finngen_group_trait_annotations.tsv") %>%
 mutate(plotnames=ifelse(combine=="",group_name,supergroup_name))
@@ -65,12 +60,7 @@ tm <-  tm %>% mutate(HLA_SNP=41234,genome_SNP=9727032) %>% mutate(enrich=(HLA_hi
 
 # Were any not enriched in HLA?
 tm %>% filter(enrich<1)
-
 e <- tm %>% select(group,enrich,n) %>% filter(n>5) # %>% filter(n>=20)
-
-#an <- data.table::fread("/oak/stanford/groups/pritch/users/strausz/hla/FINNGEN_ENDPOINTS.txt")
-#an$code <- gsub("^#","",an$code)
-#e <- left_join(e,an,by=c("group"="code"))
 e <- left_join(e,tm,by=c("group","n","enrich"))
 
 OUTPUT_FILE="/oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/enrichment/enrichHLA_bygroup_finngenan.txt"

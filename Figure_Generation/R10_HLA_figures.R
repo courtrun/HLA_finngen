@@ -16,10 +16,9 @@ hits <- h %>% mutate(SNP=ifelse(ID %in% c("rs2269424","rs2517713", "rs4713462", 
 
 # Load files
 lr<-fread("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/R10_hla_results/R10_files/R10_LD08.txt") # LD regions per SNP, r2 > 0.8
-##lr<-fread("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/R10_hla_results/R10_files/R10_LD05.txt") # LD regions per SNP, r2 > 0.5
 s <- data.table::fread("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/R10_hla_results/R10_files/R10_condit_results.txt",fill=TRUE) # HLA hits
-#an <- data.table::fread("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/R10_hla_results/R10_files/R10_trait_categories.txt") # Trait categories
 an <- data.table::fread("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/R10_hla_results/R10_files/R10_trait_categories_v2.tsv") # Trait categories
+
 # Munge
 an$Category <- ifelse(an$Category=="Infection","Infectious",
       ifelse(an$Category=="Neoplasm","Neoplastic",ifelse(an$Category=="Neuro","Neurologic",an$Category)))
@@ -60,6 +59,7 @@ png("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/R10_hla_resu
 p
 dev.off()
 
+### Horizontal LD line plot
 k2 <- data.table::fread("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/R10_hla_results/R10_files/gene_limits_hla_only.txt")
 
 k<-merge(k, k2, by="pos", all.x=T)
@@ -76,22 +76,6 @@ ggplot(k) +
   xlab("Genome Position of SNP LD > 0.8 region") +
   ylab("") +
   scale_fill_brewer(palette = "Paired",breaks=c("Autoimmune","Cardiometabolic","Infectious","Neoplastic","Neurologic","Organ","Other","Rheumatologic"))+
-  scale_color_brewer(palette = "Paired")+
-  theme_classic()+
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
-  theme(text = element_text(size = 16))+
-  ## geom_point(aes(x=pos, y=P2), shape=21, size=2)+
-  geom_point(aes(x=pos, y=P2, fill=Category), size=3, color="black", pch=21)
-dev.off()
-
-png("R10_LD_plot2.png", width = 1200, height = 1500)
-k %>% mutate(temp= fct_reorder(rsids,MIN_BP),P2=seq(1,nrow(.)*3,3)) %>%
-  ggplot() +
-  geom_rect(aes(xmin = MIN_BP, xmax = MAX_BP, ymin = P2-0.75, ymax = P2+0.75, fill = Category)) +
-  geom_rect(aes(xmin = start2, xmax = stop2, ymin = 0, ymax = 430*3))+
-  xlab("Genome Position of SNP LD > 0.8 region") +
-  ylab("") +
-  scale_fill_brewer(palette = "Paired",breaks=c("Other","Organ","Neuro","Neoplasm","MSK","Cardiometabolic","Infection","Autoimmune"))+
   scale_color_brewer(palette = "Paired")+
   theme_classic()+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+

@@ -1,5 +1,6 @@
 # Courtney Smith - Main analysis
-# Plot genes labeled in HLA region (x-axis is genome position and y-axis is nothing, colored by whether the gene is classical hla, non-classical hla, or non-hla)
+# Plot genes labeled in HLA region (x-axis is genome position and y-axis is nothing,
+# colored by whether the gene is classical hla, non-classical hla, or non-hla)
 
 library(data.table)
 library(dplyr)
@@ -40,23 +41,6 @@ p <- ggplot(h) +
   guides(color= guide_legend(override.aes = aes(label = "")))
 
 png("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/gene_plot.png", width = 1800, height = 500)
-p
-dev.off()
-
-########################
-# Plot all protein coding genes in HLA region that are the nearest gene to at least one of the hits
-p <- ggplot(h) +
-  geom_rect(aes(xmin = start, xmax = min_stop, ymin = -1, ymax = y, fill = HLA_gene)) +
-  xlab("Genome Position") +
-  ylim(-20,20)+
-  geom_label_repel(aes(x=pos_mean,y=y,label=nearest_genes,color=HLA_gene),size=5,force=30, show.legend = F) + #, min.segment.length=unit(0,'lines'), show.legend = FALSE,force=10,segment.size=0.25)+
-  theme_classic()+
-  theme(axis.title.y = element_blank(),axis.text.y=element_blank(),axis.ticks.y=element_blank())+
-  theme(text = element_text(size = 16))+scale_color_brewer(palette = "Dark2")+
-  scale_fill_brewer(palette = "Dark2")+
-  guides(color= guide_legend(override.aes = aes(label = "")))
-
-png("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/gene_plot_alllabeled.png", width = 1800, height = 500)
 p
 dev.off()
 
