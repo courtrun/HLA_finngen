@@ -46,7 +46,7 @@ for (cnum in keepclust){
 combstats[[bnum]] <- bind_rows(sumstats)
 }
 
-allstats <- bind_rows(combstats) %>% arrange(frac) %>% mutate(clusterblock=paste0(block,"-",cluster)) 
+allstats <- bind_rows(combstats) %>% arrange(frac) %>% mutate(clusterblock=paste0(block,"-",cluster))
 
 library(ggplot2)
 ggplot(allstats, aes(fill=basechange))+facet_wrap(~block,scales="free_x")+
@@ -105,43 +105,14 @@ ggplot(as, aes(x = factor(block), y = cluster, fill = perchangefrombase)) +
   #labs(x="Traits",y="Clusters",fill="Z-score")
   labs(x="",y="",fill="Percent Change from Baseline")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-bnum=1
-co <- data.table::fread(paste0(nsnp_dir,"hb",bnum,"_heatmapclustorder.txt"),sep=",")
-co$clustnum <- as.integer(gsub("Cluster ","",co$cluster))
-
-
-
 ###
 binom.test(562,770,0.675) # 562 from 0.73*770 bc 73% of people * 770 haplotypes compared to 67.5% baseline prevalence
 as <- allstats %>% filter(block==bnum&cluster!=0)
 as$cluster <- factor(as$cluster,levels=co$clustnum)
 as$perchangefrombase <- as.numeric(ifelse(as$perchangefrombase>5,5,as$perchangefrombase))
 ggplot(as, aes(x = factor(block), y = cluster, fill = perchangefrombase)) +
-  #geom_tile(color="black",size=1)+
   geom_tile(width=0.2)+
-  #scale_fill_gradient2(low="blue",mid="white",high="red",midpoint=0)+
   scale_fill_gradient2(low="green",mid="white",high="orange",midpoint=0,limits=c(-5,5))+ #limits=c(-5,5)
   theme_classic()+
   theme(axis.text.x = element_text(angle = 70, hjust = 1))+
-  #labs(x="Traits",y="Clusters",fill="Z-score")
   labs(x="",y="",fill="Percent Change from Baseline")
-

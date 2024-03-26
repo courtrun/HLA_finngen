@@ -48,7 +48,7 @@ while (i>(-1)){
     keptclusters <- keptclusters[ ! keptclusters %in% c(vifallele)]
   }
   nclust <- length(keptclusters)
-  
+
   # first figure out non colinear ones
   trait="T1D"
   form <- as.formula(paste(paste(trait,"~ "),paste(keptclusters,collapse="+"),paste0("+SEX_IMPUTED+AGE_AT_DEATH_OR_END_OF_FOLLOWUP+PC1+PC2+PC3+PC4+PC5+PC6+PC7+PC8+PC9+PC10")))
@@ -191,7 +191,7 @@ length(unique((filter(comb,abs(z_adj)>4))$nimi)) # num sig associations in adj r
 
 head(comb %>% filter(abs(z_pre)>4) %>% arrange(-abs(z_adj)))
 
-## 
+##
 
 results_dt1 <- data.table::fread(paste0(nsnp_dir,"hb",1,"_regresults_adj_all_alleles_inblock.txt")) %>% mutate(block=1)
 results_dt2 <- data.table::fread(paste0(nsnp_dir,"hb",2,"_regresults_adj_all_alleles_inblock.txt")) %>% mutate(block=2)
@@ -245,37 +245,3 @@ head(comb %>% filter(abs(z_pre)>4) %>% arrange(-abs(z_adj)))
 # how many were more significant after adjustment across the blocks
 (filter(comb,(abs(z_adj)>4|abs(z_pre)>4) & abs(z_adj)>abs(z_pre))) %>% group_by(block) %>% count()
 dim(filter(comb,(abs(z_adj)>4|abs(z_pre)>4) & abs(z_adj)>abs(z_pre)))
-
-
-######## chi squared analysis on method 2 (all alleles in a block together with all haplotypes in the block)
-bnum=1
-results_dt <- data.table::fread(paste0(nsnp_dir,"hb",bnum,"_regresults_adj_all_alleles_inblock.txt"))
-
-# Filter to traits sig in unadjusted cluster regression
-cr <- data.table::fread(paste0(nsnp_dir,"hb",bnum,"_regresults.txt")) %>% mutate(z=beta/se) # Load in cluster regression
-cst <- unique((cr %>% filter(abs(z)>4))$nimi) # keep sig traits
-
-# Label type
-clusts <- unique(filter(results_dt,grepl("cluster",cluster))$cluster)
-results_dt$type <- ifelse(results_dt$cluster %in% clusts,"cluster","allele")
-
-# Calculate the expected quantiles under the null hypothesis (uniform distribution)
-results_dt <- results_dt %>% filter(nimi %in% cst) %>% mutate(o=-log10(p)) %>% arrange(o) %>%
-  group_by(nimi,type) %>% mutate(e=-log10(rank(p)/n()),e2=-log10(ppoints(p)))
-
-library(ggplot2)
-
-ggplot(results_dt %>% filter(nimi=="AUTOIMMUNE"),aes(x=e,y=o,color=type)) + facet_wrap(~nimi)+
-  geom_point()+geom_abline(intercept=0,slope=1)+
-  labs(x="Expected -log10(P)",y="Observed -log10(P)")+
-  theme_classic()
-
-ggplot(results_dt %>% filter(nimi=="K11_OTHDIG"),aes(x=e,y=o,color=type)) + facet_wrap(~nimi)+
-  geom_point()+geom_abline(intercept=0,slope=1)+
-  labs(x="Expected -log10(P)",y="Observed -log10(P)")+
-  theme_classic()
-
-ggplot(results_dt,aes(x=e,y=o,color=type)) + facet_wrap(~nimi)+
-  geom_point()+geom_abline(intercept=0,slope=1)+
-  labs(x="Expected -log10(P)",y="Observed -log10(P)",color="Predictor Type")+
-  theme_classic()
