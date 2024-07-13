@@ -83,3 +83,18 @@ ggplot(k) +
   ## geom_point(aes(x=pos, y=P2), shape=21, size=2)+
   geom_point(aes(x=pos, y=P2, fill=Category), size=3, color="black", pch=21)
 dev.off()
+
+pdf("R10_LD_plot.pdf", width = 12, height = 7)
+ggplot(k) +
+  geom_rect(aes(xmin = MIN_BP, xmax = MAX_BP, ymin = P2-0.75, ymax = P2+0.75, fill = Category)) +
+  geom_rect(aes(xmin = start2, xmax = stop2, ymin = 0, ymax = 430))+
+  xlab("Genome Position of SNP LD > 0.8 region") +
+  ylab("") +
+  scale_fill_brewer(palette = "Paired",breaks=c("Autoimmune","Cardiometabolic","Infectious","Neoplastic","Neurologic","Organ","Other","Rheumatologic"))+
+  scale_color_brewer(palette = "Paired")+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  theme(text = element_text(size = 16))+
+  ## geom_point(aes(x=pos, y=P2), shape=21, size=2)+
+  geom_point(aes(x=pos, y=P2, fill=Category), size=3, color="black", pch=21)
+dev.off()

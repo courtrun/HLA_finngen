@@ -14,6 +14,7 @@ an <- left_join(an,gan,by=c("trait"))
 count <- an %>% group_by(group) %>% count()
 count <- as.data.frame(count %>% arrange(group))
 count$order <- 1:nrow(count)
+count$group <- ifelse(count$group=="Rheumatologic","Rheumatic",ifelse(count$group=="Rheumatologic Comorbidities","Rheumatic Comorbidities",count$group)
 
 # Plot
 p <- ggplot(count %>% filter(n>=3),aes(y=forcats::fct_reorder(group,-order),x=n,fill=group)) + #
@@ -41,6 +42,8 @@ an$Category <- ifelse(an$Category=="Infection","Infectious",
       ifelse(an$Category=="Neoplasm","Neoplastic",ifelse(an$Category=="Neuro","Neurologic",an$Category)))
 an$Subcategory <- ifelse(an$Subcategory=="Pulmonary","Lung",
       ifelse(an$Subcategory=="Heme","Blood",an$Subcategory))
+
+an$Category <- ifelse(an$Category=="Rheumatologic","Rheumatic",an$Category)
 
 OUTPUT_FILE="/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/R10_hla_results/R10_files/R10_trait_categories_manual.tsv"
 write.table(an, OUTPUT_FILE, quote=F, sep="\t", row.names=F, col.names=T)

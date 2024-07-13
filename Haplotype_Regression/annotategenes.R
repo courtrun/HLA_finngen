@@ -73,6 +73,7 @@ ggplot(gene_pos, aes(x=start, xend=stop, y=1, yend=1)) +
         axis.ticks.x=element_blank(),
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank())
+ggsave(paste0(fdir,"snps",nsnp,"/figures_askout07012024/",nsnp,"_b",bnum,"minthres_",min_threshold,"_traits",ntraits,"_geneannotate.tiff"),height=4,width=14)
 
 #### BLOCK 2 below
 
@@ -140,6 +141,7 @@ ggplot(gene_pos, aes(x=start, xend=stop, y=1, yend=1)) +
         axis.ticks.x=element_blank(),
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank())
+ggsave(paste0(fdir,"snps",nsnp,"/figures_askout07012024/",nsnp,"_b",bnum,"minthres_",min_threshold,"_traits",ntraits,"_geneannotate.tiff"),height=4,width=14)
 
 ##### BLOCK 1 below
 
@@ -206,4 +208,5 @@ ggplot(gene_pos, aes(x=start, xend=stop, y=1, yend=1)) +
         axis.ticks.x=element_blank(),
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank())
+ggsave(paste0(fdir,"snps",nsnp,"/figures_askout07012024/",nsnp,"_b",bnum,"minthres_",min_threshold,"_traits",ntraits,"_geneannotate.tiff"),height=4,width=14)
 

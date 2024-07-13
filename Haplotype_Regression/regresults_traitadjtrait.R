@@ -19,7 +19,25 @@ nclust=length(keptclusters)
 
 bnum=1
 
-# Select example trait pairs
+### Traits to consider
+#lupus/RA and such with each other, with IBD
+#SPONDYLOPATHY_FG
+#L12_LUPUS
+#K11_IBD_STRICT
+#K11_IBD_STRICT_PSC
+#RHEUMA_NOS#
+
+#AB1_EBV and G6_MS
+
+#RX_CROHN_1STLINE and IBD / RHEUMA / infections
+
+#infection: AB1_ERYSIPELAS, AB1_OTHER_SEPSIS, AB1_SEXUAL_TRANSMISSION
+#cancer: C3_SQUOMOUS_CELL_CARCINOMA_SKIN_EXALLC, C3_BASAL_CELL_CARCINOMA_EXALLC, 
+
+#T1D and eye things (H7_GLAUCOMA, H7_IRIDOACUTE, H7_IRIDOCHRONIC, H7_CATARACTOTHER)
+#cancer and diabetes/infection
+#lupus/ RA and vasculitis (I9_ATHSCLE,FG_DOAAC)
+
 trait1="K11_IBD_STRICT"
 trait2="RX_CROHN_2NDLINE"
 

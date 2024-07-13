@@ -1,0 +1,13 @@
+## Courtney Smith - HLA project - Miscellaneous short snippet code scripts
+
+# Calculate the percent associations had a genome-wide association across more than one disease
+library(dplyr)
+
+c  <- data.table::fread("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/matrix/filt428hits_wide.txt")
+
+# subset to snps that have at least 2 sig hits across the traits
+sigthres = 1e-6
+ncut = 2 # 10
+pvals <- c %>% select(matches("^pval_")) # make a new df that only has the pvalue columns
+c2 <- c[apply(pvals, 1, function(r) sum(r < sigthres) >= ncut),] # only keep rows where the pval is < sigthres for ncut or more columns
+nrow(c2)/nrow(c)

@@ -41,5 +41,5 @@ ggplot(s, aes(x = pos, y = Category, fill= Category)) +
   geom_density_ridges(alpha = 0.7) +
   scale_fill_viridis_d() +
   labs(x="Genome Position",y="")+
-  theme_minimal()
-ggsave("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/ridgeline_cat.png",bg="white")
+  theme_minimal()+theme(text = element_text(size = 20))
+ggsave("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/ridgeline_cat.png",bg="white",height=7,width=12)

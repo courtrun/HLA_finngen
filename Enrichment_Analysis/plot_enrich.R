@@ -13,6 +13,8 @@ options(ggrepel.max.overlaps = Inf)
 e <- data.table::fread("/oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/enrichment/enrichHLA_bygroup_finngenan.txt")
 e <- e %>% mutate(se_HLA=sd_HLA_hits/sqrt(n),se_non_HLA=sd_non_HLA_hits/sqrt(n))
 
+e$group <- ifelse(e$group=="Rheumatologic","Rheumatic",ifelse(e$group=="Rheumatologic Comorbidities","Rheumatic Comorbidities",e$group))
+
 # Set ntraits, min num traits a group must have to be plotted
 ntraits=15 # 15, 20
 
@@ -28,6 +30,17 @@ ggplot(e20,aes(y=forcats::fct_reorder(group,-order),x=enrich,fill=group))+
 	theme(text = element_text(size=20),legend.position="none",
 	axis.title.y=element_blank())
 ggsave(paste0("/oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/enrichment/figures/enrichHLA_bygroup",ntraits,".png"),
+width=7,height=6)
+
+abbr <- e20
+abbr$enrichabr <- ifelse(e20$enrich>100,100,e20$enrich)
+ggplot(abbr,aes(y=forcats::fct_reorder(group,-order),x=enrichabr,fill=group))+
+	xlim(0, max(abbr$enrichabr)) +
+	geom_bar(stat = "identity")+theme_classic()+
+	labs(y="Trait Group",x="Enrichment of HLA Region",fill="Trait Group")+
+	theme(text = element_text(size=20),legend.position="none",
+	axis.title.y=element_blank())
+ggsave(paste0("/oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/enrichment/figures/enrichHLA_bygroup",ntraits,"_noinfections.png"),
 width=7,height=6)
 
 # Save table with labels for each group with the plotname labels I created
@@ -64,16 +77,19 @@ h <- ggplot(e20,aes(x=HLA_hits,y=enrich,color=group))+geom_point()+
 geom_label_repel(aes(label=group,color=group), size=4, force=10,show.legend=FALSE)+
 		theme_classic()+theme(legend.position="none")+
 		labs(x="HLA hits",y="Enrichment in HLA",color="Trait Group")+
-		geom_errorbar(aes(xmin=HLA_hits-se_HLA, xmax=HLA_hits+se_HLA))
+		geom_errorbar(aes(xmin=HLA_hits-se_HLA, xmax=HLA_hits+se_HLA))+theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14))
 
 n <- ggplot(e20,aes(x=non_HLA_hits,y=enrich,color=group))+geom_point()+
 geom_label_repel(aes(label=group,color=group), size=4, force=10,show.legend=FALSE)+
 		theme_classic()+theme(legend.position="none")+
 		labs(x="Genome outside HLA hits",y="Enrichment in HLA",color="Trait Group")+
-		geom_errorbar(aes(xmin=non_HLA_hits-se_non_HLA, xmax=non_HLA_hits+se_non_HLA))
+		geom_errorbar(aes(xmin=non_HLA_hits-se_non_HLA, xmax=non_HLA_hits+se_non_HLA))+theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14))
 
 ggarrange(h,n,ncol = 2, nrow = 1)
-ggsave("/oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/enrichment/figures/enrichHLA_bygroup20_hits.png")
+ggsave("/oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/enrichment/figures/enrichHLA_bygroup20_hits.png",height=7,width=12)
+ggsave("/oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/enrichment/figures/enrichHLA_bygroup20_hits.pdf",height=7,width=12)
 
 ##
 
@@ -82,8 +98,10 @@ h <- ggplot(e20,aes(x=HLA_hits,y=non_HLA_hits,color=group))+geom_point()+
 geom_label_repel(aes(label=group,color=group), size=4, force=10,show.legend=FALSE)+
 		theme_classic()+theme(legend.position="none")+
 		labs(x="HLA hits",y="Genome outside HLA hits",color="Trait Group")+
-		geom_errorbar(aes(xmin=HLA_hits-se_HLA, xmax=HLA_hits+se_HLA,ymin=non_HLA_hits-se_non_HLA, ymax=non_HLA_hits+se_non_HLA))
-ggsave("/oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/enrichment/figures/enrichHLA_bygroup20_comparehits.png")
+		geom_errorbar(aes(xmin=HLA_hits-se_HLA, xmax=HLA_hits+se_HLA,ymin=non_HLA_hits-se_non_HLA, ymax=non_HLA_hits+se_non_HLA))+theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=14))
+ggsave("/oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/enrichment/figures/enrichHLA_bygroup20_comparehits.png",height=7,width=12)
+ggsave("/oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/enrichment/figures/enrichHLA_bygroup20_comparehits.pdf",height=7,width=12)
 
 ### Scatterplot of HLA hits vs non HLA hits
 h <- ggplot(e20,aes(x=HLA_hits/HLA_SNP,y=non_HLA_hits/genome_SNP,color=group))+geom_point()+
