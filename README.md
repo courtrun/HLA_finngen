@@ -14,9 +14,10 @@ Directory Overview
 
 - Haplotype_Regression: Identifying haplotypes, clustering into haplotype groups, performing haplotype regression analysis and adjacent analyses
   - haplo_blockdefining.R (generated list of snps in each block)
-  - hapclusterandregress.R (Defines haplotype groups and runs regression)
+  - hapclusterandregress.R (Defines haplotype groups and runs regression; hapclusterandregress_alltraits.R is the same but on all traits not just the SNP ascertained HLA-associated traits)
   - hapclusterandregress_alltraits.R (Repeats about but for all traits)
-  - hap_regress_plotting.R (Makes the dendrogram plots and haplotype genotype heatmaps for fig 5)
+  - hap_regress_plot.R (Makes the dendrogram plots and haplotype genotype heatmaps for fig 5)
+  - hap_results_updown.R (Analyzing haplotype disease trade-offs and generates figure S4)
   - annotategenes.R (Makes annotate snps with genes for fig 5)
   - regress_enrich.R (Haplotype Group Burden Analysis)
   - comparecorrresults.R (Haplotype Regression Trait Pair Correlation Measure analyses for fig 6)
