@@ -23,8 +23,7 @@ shell.prefix("source ~/.bashrc; ")
 CHROMS= [str(c) for c in range(1, 23)] # chromosome numbers 1 through 22
 
 # The path used for the clumping
-CLUMP_BED_PATH="/oak/stanford/groups/pritch/scratch.copy/groups/pritch/nasa/tools/ldsc/1000G_EUR_Phase3_plink/mymerge" # could have issue with matching IDs, if so let Nasa know
-# /oak/stanford/groups/pritch/users/nasa/biomarkers/ukb_imp_v3.info03.maf001.reassessment.white_british
+CLUMP_BED_PATH="tools/ldsc/1000G_EUR_Phase3_plink/mymerge"
 
 rule all:
     input:
