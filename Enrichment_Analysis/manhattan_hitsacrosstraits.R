@@ -10,7 +10,8 @@ a <- data.table::fread("/oak/stanford/groups/pritch/users/strausz/finngen_R10_gw
 colnames(a) <- c("trait","ID","CHR","BP","ref","alt","BETA","SE","P","AF_alt")
 
 # Define the size of the buckets (1 million in this case)
-bucket_size <- 200000 # 100kb, 50kb, 500kb, 200kb
+bucket_size <- 100000 # 100kb, 50kb, 500kb, 200kb
+num_in_kb <- bucket_size/1000
 
 # Create a new column representing the bucket for "BP"
 a <- a %>% arrange(CHR,BP) %>%
@@ -51,11 +52,13 @@ axis.set <- result %>%
   group_by(CHR) %>%
   summarize(center = (max(order) + min(order)) / 2)
 
+print(result %>% arrange(-count) %>% head)
+
 # Plotting
 ggplot(result,aes(x=order,y=count,color=as.factor(CHR_color)))+
   geom_point(size=5)+
    scale_color_brewer(palette="Dark2")+ guides(color = "none")+
   scale_x_continuous(label = axis.set$CHR, breaks = axis.set$center) + # label the chromosome number in the center of each chromosome block
-  theme_classic()+labs(x="Chromosome",y=paste0("Number of Hits Across\nAll Traits in 100kb blocks")) +
+  theme_classic()+labs(x="Chromosome",y=paste0("Number of Hits Across\nAll Traits in ",num_in_kb,"kb blocks")) +
   theme(text=element_text(size = 28),axis.text.x = element_text(size = 24))
 ggsave(paste0("/oak/stanford/groups/pritch/users/courtrun/projects/hla/figures/enrichment_manhattan_hitsacrosstraits",bucket_size,".png"),width=30,height=8)

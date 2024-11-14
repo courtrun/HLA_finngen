@@ -9,17 +9,13 @@ library("corrplot")
 library(ComplexHeatmap)
 
 # Set parameters
-nsnps=c(1000) #c(30,100,120)
+nsnps=c(1000)
 blocks=1:3
 pcut <- 1e-6
 min_threshold=20000
 ntraits=1
 zcut = 4
 extended = "N"
-
-nsnp=1000
-
-bnum=1
 
 for (nsnp in nsnps){
   for (bnum in blocks){

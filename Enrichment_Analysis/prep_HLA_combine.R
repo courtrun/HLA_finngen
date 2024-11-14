@@ -49,12 +49,13 @@ tg <- data.table::fread("/oak/stanford/groups/pritch/users/courtrun/projects/hla
 mutate(plotnames=ifelse(combine=="",group_name,supergroup_name))
 
 t <- left_join(t,tg,by=c("group")) %>% rename(fg_group=group,group=plotnames)
+#t <- t %>% mutate(se_HLA=sd_HLA_hits/sqrt(n),se_non_HLA=sd_non_HLA_hits/sqrt(n))
 OUTPUT_FILE="/oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/enrichment/enrich_trait_group_annotations.txt"
 write.table(t, OUTPUT_FILE, quote=F, sep="\t", row.names=F, col.names=T)
 
 t <- distinct(t %>% select(-fg_group,-group_name)) # want to only count each trait one time per group so remove within group duplicates
 
-tm <- t %>% group_by(group) %>% summarize(sd_HLA_hits=sd(HLA_hits),sd_non_HLA_hits=sd(non_HLA_hits),HLA_hits=mean(HLA_hits),non_HLA_hits=mean(non_HLA_hits))
+tm <- t %>% group_by(group) %>% summarize(HLA_hits=mean(HLA_hits),sd_HLA_hits=sd(HLA_hits),non_HLA_hits=mean(non_HLA_hits),sd_non_HLA_hits=sd(non_HLA_hits))
 tm <- left_join(tm,t %>% group_by(group) %>% count(),by=c("group"))
 tm <-  tm %>% mutate(HLA_SNP=41234,genome_SNP=9727032) %>% mutate(enrich=(HLA_hits/HLA_SNP)/(non_HLA_hits/genome_SNP))
 
@@ -68,12 +69,12 @@ write.table(e, OUTPUT_FILE, quote=F, sep="\t", row.names=F, col.names=T)
 
 #### Enrichments overall across traits
 t$allgroup <- "allgroup"
-tm <- t %>% group_by(allgroup) %>% summarize(sd_HLA_hits=sd(HLA_hits),sd_non_HLA_hits=sd(non_HLA_hits),HLA_hits=mean(HLA_hits),non_HLA_hits=mean(non_HLA_hits))
+tm <- t %>% group_by(allgroup) %>% summarize(HLA_hits=mean(HLA_hits),sd_HLA_hits=sd(HLA_hits),non_HLA_hits=mean(non_HLA_hits),sd_non_HLA_hits=sd(non_HLA_hits))
 tm <- left_join(tm,t %>% group_by(allgroup) %>% count(),by=c("allgroup"))
 tm <-  tm %>% mutate(HLA_SNP=41234,genome_SNP=9727032) %>% mutate(enrich=(HLA_hits/HLA_SNP)/(non_HLA_hits/genome_SNP))
 tm$enrich # enrichment overall across all traits, 17.14198
 
-tm <- t %>% filter(group!="Infectious") %>% group_by(allgroup) %>% summarize(sd_HLA_hits=sd(HLA_hits),sd_non_HLA_hits=sd(non_HLA_hits),HLA_hits=mean(HLA_hits),non_HLA_hits=mean(non_HLA_hits))
+tm <- t %>% filter(group!="Infectious") %>% group_by(allgroup) %>% summarize(HLA_hits=mean(HLA_hits),sd_HLA_hits=sd(HLA_hits),non_HLA_hits=mean(non_HLA_hits),sd_non_HLA_hits=sd(non_HLA_hits))
 tm <- left_join(tm,t  %>% filter(group!="Infectious") %>% group_by(allgroup) %>% count(),by=c("allgroup"))
 tm <-  tm %>% mutate(HLA_SNP=41234,genome_SNP=9727032) %>% mutate(enrich=(HLA_hits/HLA_SNP)/(non_HLA_hits/genome_SNP))
 tm$enrich # enrichment overall across all traits EXCEPT the infectious  traits, 16.60683

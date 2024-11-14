@@ -1,5 +1,5 @@
 ## Written by Courtney Smith 7-1-2023
-## Goal of script: Defining clusters and running haplotype regression pipeline - Blocks 1-3 - 30,100,150 SNPs
+## Goal of script: Defining clusters and running haplotype regression pipeline - Blocks 1-3 - 1000 SNPs
 
 library(dplyr)
 
@@ -25,8 +25,8 @@ library(stringdist)
 library(data.table) # note: this has a "set" function that conflicts with dendextend
 
 # Set parameters
-blocks = c(1,2,3,"2b","3b")
-nsnps= c(100,1000) # c(30,100,120,130,140,150)
+blocks = c(1,2,3)
+nsnps= c(1000)
 ############ Select subset of n random snps from the full set of snps in the block
 
 for (nsnp in nsnps){
@@ -47,26 +47,16 @@ for (nsnp in nsnps){
   }
 }
 
-########### Code for extracting the haplotype individual data for these snps on the terminal in dif formats
+########### Code for extracting the haplotype individual data for these snps on the terminal in dif formats; uncomment and run on terminal (unix not R)
 ####### Create the genotype file for the snps in this block with the alleles (A,T,C,Gs)
 ##extract the snps with PLINK
-##cd /home/ivm/haplo_analysis/snps100
-##plink --bfile /finngen/library-red/finngen_R10/genotype_plink_1.0/data/finngen_R10 --keep-allele-order --keep /home/ivm/from_satu/general_files/individuals2.txt --recode --extract hb3_snps.txt --out hb3_genotypes
-##plink --bfile /finngen/library-red/finngen_R10/genotype_plink_1.0/data/finngen_R10 --keep-allele-order --keep /home/ivm/from_satu/general_files/individuals2.txt --recode --extract hb2_snps.txt --out hb2_genotypes
-##plink --bfile /finngen/library-red/finngen_R10/genotype_plink_1.0/data/finngen_R10 --keep-allele-order --keep /home/ivm/from_satu/general_files/individuals2.txt --recode --extract hb1_snps.txt --out hb1_genotypes
-
-##cd /home/ivm/haplo_analysis/snps30
-##plink --bfile /finngen/library-red/finngen_R10/genotype_plink_1.0/data/finngen_R10 --keep-allele-order --keep /home/ivm/from_satu/general_files/individuals2.txt --recode --extract hb3_snps.txt --out hb3_genotypes
-##plink --bfile /finngen/library-red/finngen_R10/genotype_plink_1.0/data/finngen_R10 --keep-allele-order --keep /home/ivm/from_satu/general_files/individuals2.txt --recode --extract hb2_snps.txt --out hb2_genotypes
-##plink --bfile /finngen/library-red/finngen_R10/genotype_plink_1.0/data/finngen_R10 --keep-allele-order --keep /home/ivm/from_satu/general_files/individuals2.txt --recode --extract hb1_snps.txt --out hb1_genotypes
-
-##cd /home/ivm/haplo_analysis/snps120
+##cd /home/ivm/haplo_analysis/snps1000
 ##plink --bfile /finngen/library-red/finngen_R10/genotype_plink_1.0/data/finngen_R10 --keep-allele-order --keep /home/ivm/from_satu/general_files/individuals2.txt --recode --extract hb3_snps.txt --out hb3_genotypes
 ##plink --bfile /finngen/library-red/finngen_R10/genotype_plink_1.0/data/finngen_R10 --keep-allele-order --keep /home/ivm/from_satu/general_files/individuals2.txt --recode --extract hb2_snps.txt --out hb2_genotypes
 ##plink --bfile /finngen/library-red/finngen_R10/genotype_plink_1.0/data/finngen_R10 --keep-allele-order --keep /home/ivm/from_satu/general_files/individuals2.txt --recode --extract hb1_snps.txt --out hb1_genotypes
 
 ###### Create the genotype file for the snps in this block as 0s and 1s
-##cd /home/ivm/haplo_analysis/snps30 and repeat for snps100 and for snps120
+##cd /home/ivm/haplo_analysis/snps1000
 ##plink --recode 01 transpose --file hb1_genotypes --output-missing-genotype 2 --out hb1_genotypes01
 ##plink --recode 01 transpose --file hb2_genotypes --output-missing-genotype 2 --out hb2_genotypes01
 ##plink --recode 01 transpose --file hb3_genotypes --output-missing-genotype 2 --out hb3_genotypes01
@@ -82,8 +72,8 @@ library(data.table)
 library("RColorBrewer")
 
 # Set parameters
-blocks = c(1,2,3,"2b","3b")
-nsnps= c(100,1000) # c(100,500,1000) # c(30,100,120,130)
+blocks = c(1,2,3)
+nsnps= c(1000)
 
 for (nsnp in nsnps){
   for (bnum in blocks){

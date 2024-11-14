@@ -53,7 +53,9 @@ distv <- na.omit(pos$spacing)
 
 # Heatmap ordered by position for snps, clustered traits, no split
 ht <- Heatmap(zt,col = my_palette, cluster_rows = TRUE,cluster_columns = FALSE,
-show_column_names = FALSE, show_row_names=FALSE,column_title=NULL,
+show_column_names = TRUE, show_row_names=TRUE,column_title=NULL,
+column_names_gp = gpar(fontsize=24),
+row_names_gp = gpar(fontsize=24),
 show_row_dend = FALSE)
 png("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/428fullhits_alltraits_z2.png",width=6000,height=3000)
 ht
@@ -68,7 +70,78 @@ png("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/428f
 ht
 dev.off()
 
-# Repeat heatmap, ordered by position, split by block
+##########
+############### Add labels for plotting - to help annotation of 3b
+z_full$pos <- pos$POS
+z_full <- z_full %>% arrange(pos)
+
+# For key genes, look up gene boundaries and which SNPs mark the start and stop so can label in affinity design
+g <- data.table::fread("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/R10_hla_results/R10_files/gene_limits_annotated.txt") %>% arrange(start)
+key_genes <- c("HLA-F","HLA-G","HLA-A","HLA-C","HLA-B","MICA","NOTCH4") # + "HLA-DR","HLA-DQ" genes
+
+# Initialize an empty dataframe to store results
+snp_labels <- data.frame(lower = numeric(), upper = numeric(), stringsAsFactors = FALSE)
+g <- filter(g,nearest_genes %in% key_genes | grepl("HLA-DR",nearest_genes)|grepl("HLA-DQ",nearest_genes))
+# For each gene in genes of interest
+for (i in 1:nrow(g)) {
+# Identify the start and stop positions
+  start_val <- g$start[i]
+  stop_val <- g$stop[i]
+
+  # Find the lowest SNP position in z_full that is greater than start_val
+  low_snp <- (z_full %>% filter(pos > start_val) %>% slice_min(pos, n = 1))$ID
+
+  # Find the highest SNP position in z_full that is less than stop_val
+  high_snp <- (z_full %>% filter(pos < stop_val) %>% slice_max(pos, n = 1))$ID
+
+  # Append results to the results dataframe
+  snp_labels <- rbind(snp_labels, data.frame(gene = g$nearest_genes[i], snp = ifelse(length(low_snp) > 0, low_snp, NA)))
+  snp_labels <- rbind(snp_labels, data.frame(gene = g$nearest_genes[i], snp = ifelse(length(high_snp) > 0, high_snp, NA)))
+  }
+
+# Make labels for x axis
+snp_labels %>% group_by(snp) %>% count() %>% filter(freq>1) # remove do to bug but add back manually
+snp_labels %>% arrange(snp) # see which ones have repeat snps but dif genes
+snp_labels <- filter(snp_labels,!(gene=="HLA-DQA2" & snp=="chr6_32763163_C_A"))
+x_labels <- left_join(z_full %>% select(ID,pos) %>% distinct(),distinct(snp_labels),by=c("ID"="snp"))$gene
+x_labels <- sapply(x_labels, function(x) ifelse(is.na(x), "-", x))
+colnames(zt) <- x_labels
+
+# Make y axis labels - label diseases sig in hap analysis (fig 5)
+p <- data.table::fread("/oak/stanford/groups/pritch/users/courtrun/projects/hla/data/phenotype_info/new_plot_names.txt",header=T) # load in the list of traits and filter to those that are plotted
+p2 <- data.table::fread("/oak/stanford/groups/pritch/users/courtrun/projects/hla/data/phenotype_info/regdatafull_long.txt",header=T) # load in the list of traits and filter to those that are plotted
+custom_traits <- unique(filter(p2,plotted=="yes")$traits)
+p$cols <- ifelse(p$trait %in% custom_traits,p$Plot,"-")
+rownames(zt) <- p$cols
+
+# Spread by position
+ht <- Heatmap(zt,col = my_palette, cluster_rows = TRUE,cluster_columns = FALSE,
+column_gap=unit(distv, "mm"),column_split=c(1:splits),cluster_column_slices=FALSE,
+show_column_names = TRUE, show_row_names=TRUE,column_title=NULL,
+column_names_gp = gpar(fill = "gray"), show_row_dend = FALSE)
+
+png("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/428fullhits_alltraits_spaced_z2_spread_wlabels.png",width=6000,height=3000)
+ht
+dev.off()
+pdf("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/428fullhits_alltraits_spaced_z2_spread_wlabels.pdf",width=17,height=20)
+ht
+dev.off()
+
+################ Repeat heatmap, unsplit, traits from fig 5 labels, SNPs annotated
+colnames(zt) <- z_full$ID
+
+ht <- Heatmap(zt,col = my_palette, cluster_rows = TRUE,cluster_columns = FALSE,
+show_column_names = TRUE, show_row_names=TRUE,column_title=NULL,
+column_names_gp = gpar(fontsize=20),
+row_names_gp = gpar(fontsize=20),
+show_row_dend = FALSE)
+png("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/428fullhits_alltraits_z2_wlabels.png",width=6000,height=3000)
+ht
+dev.off()
+pdf("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/428fullhits_alltraits_z2_wlabels.pdf",width=40,height=20)
+ht
+dev.off()
+#################### Repeat heatmap, ordered by position, split by block
 
 library(dplyr)
 library(ggplot2)
@@ -114,5 +187,58 @@ column_split=bks,cluster_column_slices=FALSE,
 show_column_names = FALSE, show_row_names=FALSE,column_title=NULL,
 show_row_dend = FALSE)
 png("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/428fullhits_alltraits_spaced_z2_brokenbyblock.png",width=6000,height=3000)
+ht
+dev.off()
+
+############### Add labels for plotting
+
+# For key genes, look up gene boundaries and which SNPs mark the start and stop so can label in affinity design
+key_genes <- c("HLA-F","HLA-G","HLA-A","HLA-C","HLA-B","MICA","NOTCH4") # + "HLA-DR","HLA-DQ" genes
+
+# Initialize an empty dataframe to store results
+snp_labels <- data.frame(lower = numeric(), upper = numeric(), stringsAsFactors = FALSE)
+g <- filter(g,nearest_genes %in% key_genes | grepl("HLA-DR",nearest_genes)|grepl("HLA-DQ",nearest_genes))
+# For each gene in genes of interest
+for (i in 1:nrow(g)) {
+# Identify the start and stop positions
+  start_val <- g$start[i]
+  stop_val <- g$stop[i]
+
+  # Find the lowest SNP position in z_full that is greater than start_val
+  low_snp <- (z_full %>% filter(pos > start_val) %>% slice_min(pos, n = 1))$ID
+
+  # Find the highest SNP position in z_full that is less than stop_val
+  high_snp <- (z_full %>% filter(pos < stop_val) %>% slice_max(pos, n = 1))$ID
+
+  # Append results to the results dataframe
+  snp_labels <- rbind(snp_labels, data.frame(gene = g$nearest_genes[i], snp = ifelse(length(low_snp) > 0, low_snp, NA)))
+  snp_labels <- rbind(snp_labels, data.frame(gene = g$nearest_genes[i], snp = ifelse(length(high_snp) > 0, high_snp, NA)))
+  }
+
+# Make labels for x axis
+snp_labels %>% group_by(snp) %>% count() %>% filter(freq>1) # remove do to bug but add back manually
+snp_labels %>% arrange(snp) # see which ones have repeat snps but dif genes
+snp_labels <- filter(snp_labels,!(gene=="HLA-DQA2" & snp=="chr6_32763163_C_A"))
+x_labels <- left_join(z_full %>% select(ID,pos) %>% distinct(),distinct(snp_labels),by=c("ID"="snp"))$gene
+x_labels <- sapply(x_labels, function(x) ifelse(is.na(x), "-", x))
+colnames(zt) <- x_labels
+
+# Make y axis labels - label diseases sig in hap analysis (fig 5)
+p <- data.table::fread("/oak/stanford/groups/pritch/users/courtrun/projects/hla/data/phenotype_info/new_plot_names.txt",header=T) # load in the list of traits and filter to those that are plotted
+p2 <- data.table::fread("/oak/stanford/groups/pritch/users/courtrun/projects/hla/data/phenotype_info/regdatafull_long.txt",header=T) # load in the list of traits and filter to those that are plotted
+custom_traits <- unique(filter(p2,plotted=="yes")$traits)
+p$cols <- ifelse(p$trait %in% custom_traits,p$Plot,"-")
+rownames(zt) <- p$cols
+
+ht <- Heatmap(zt,col = my_palette, cluster_rows = TRUE,cluster_columns = FALSE,
+column_split=bks,cluster_column_slices=FALSE,
+show_column_names = TRUE, show_row_names=TRUE,column_title=NULL,
+ row_names_gp = gpar(fontsize = 24),
+column_names_gp = gpar(fontsize=24),
+show_row_dend = FALSE)
+png("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/428fullhits_alltraits_spaced_z2_brokenbyblock_wlabels.png",width=6000,height=3000)
+ht
+dev.off()
+pdf("/oak/stanford/groups/pritch/users/strausz/finngen_R10_sumstats/figures/428fullhits_alltraits_spaced_z2_brokenbyblock_wlabels.pdf",width=17,height=20)
 ht
 dev.off()
