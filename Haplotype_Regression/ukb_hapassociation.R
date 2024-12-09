@@ -400,7 +400,7 @@ for (bnum in blocks){
   
   data.table::fwrite(results_dt, paste0(nsnp_dir,"hb",bnum,"_afterregalldiseases.txt"), row.names = F, quote = F, sep = "\t")
   
-  print(paste0("Done regression: block",bnum," and nsnp",nsnp))
+  print(paste0("Done regression: block",bnum))
 
 }
 
@@ -483,6 +483,7 @@ for (bnum in blocks){
   z_filt <- 1
   clusternames <- paste0("X",rev(clustorder))
   z <- as.data.frame(z) %>% select(clusternames) # reorder columns
+  znocut <- z
   
   # Add cutoff values for plotting
   z[z<(-5)] <- -5
@@ -499,14 +500,43 @@ for (bnum in blocks){
   melted_df <- melted_df %>% filter(!(traits %in% c("BIN_FC3006144","BIN_FC50001468","BIN_FC40001448")))
   
   # Add in updated trait names
-  melted_df <-melted_df %>% left_join(sigtraitinfo,by=c("traits"="trait"))
+  melted_df <- melted_df %>% left_join(sigtraitinfo,by=c("traits"="trait"))
   melted_df$GBE_NAME <- factor(melted_df$GBE_NAME,levels=unique(melted_df$GBE_NAME))
-  trait_annotations <- data.frame(traits=c("HC703", "BIN_FC10006152", "BIN_FC5006152", "HC310", "HC990", "BIN_FC20020549", "HC1345", "HC151", "HC810", "HC528", "HC530", "HC170", "HC639", "BIN22133", "HC1201", "BIN21068", "BIN_FC6006149", "HC55", "HC645", "HC1132", "HC303", "HC1212", "HC430", "HC1242", "HC422", "BIN_FC9006154", "BIN_FC2006154", "BIN_FC8006154", "HC1188", "BIN_FC1006149", "HC1102", "HC201", "BIN10030820", "HC38", "BIN_FC10002986", "HC219", "HC643","HC1021", "HC49", "HC85", "FH1044", "HC1094", "HC1322", "BIN_FC9006152", "HC1581", "HC382", "BIN_FC4006152", "HC1036", "BIN_FC3006153", "BIN_FC8006153", "HC648", "BIN_FC3006177", "BIN_FC6006177", "FH1220", "BIN2443", "HC221", "HC652", "BIN23067", "BIN2188", "BIN_FC4001747", "HC1233", "HC352", "HC125", "HC607", "HC497", "BIN2473", "HC620", "HC868", "HC1209", "HC26", "cancer1003", "cancer1060", "HC646", "HC332", "BIN_FC10001707", "HC1159", "HC1213", "HC91"),Plot=c("Mineral metabolism disorder","Rhinitis/eczema","Rhinitis/eczema 2","Hiatal hernia","Varicose veins","Anxiety Rx","Vulvovaginitis","MS","MS 2","HSV infection","VZV infection","Sarcoidosis","Sarcoidosis 2","Sarcoidosis 3","SLE","Celiac disease","Dentures","Hyperthyroid thyrotoxicosis","Hyperthyroid thyrotoxicosis 2","Malabsorption","Celiac disease 2","Rheumatoid arthritis 2","Rheumatoid arthritis","Ankylosing spondylitis 2","Ankylosing spondylitis", "Paracetamol use","Ibuprofen use","Ibuprofen use 2","Vitiligo","Mouth ulcers","UC 2","UC","Elevated rheumatoid factor","Psoriasis","Insulin","Hypothyroidism","Hypothyroidism 2","Allergic rhinitis","Allergic rhinitis 2","Enlarged prostate","Prostate cancer","Inguinal hernia","Enlarged prostate 2","Asthma","Asthma 2","Asthma 3","Asthma 4","Asthma 5","Diabetes Rx (F)","Insulin 2","Diabetes 5","Diabetes Rx (M)","Insulin 3","Diabetes 1","Diabetes 2","Diabetes 3","Diabetes 4","MCV seropositivity","Chronic illness","Brown hair","SLE 2","SLE 3","Anemia","Anemia 2","STI","Other serious disability","Anemia 3","Iridocyclitis","Reactive arthropathies","Iritis","Skin cancer","Non-melanoma skin cancer","Thyroiditis","PTSD","Right handedness","Psoriasis 2","Psoriatic arthropathies","Psoriatic arthropathy 2"))
+  trait_annotations <- data.frame(traits=c("HC703", "BIN_FC10006152", "BIN_FC5006152", "HC310", "HC990", "BIN_FC20020549", "HC1345", "HC151", "HC810", "HC528", "HC530", "HC170", "HC639", "BIN22133", "HC1201", "BIN21068", "BIN_FC6006149", "HC55", "HC645", "HC1132", "HC303", "HC1212", "HC430", "HC1242", "HC422", "BIN_FC9006154", "BIN_FC2006154", "BIN_FC8006154", "HC1188", "BIN_FC1006149", "HC1102", "HC201", "BIN10030820", "HC38", "BIN_FC10002986", "HC219", "HC643","HC1021", "HC49", "HC85", "FH1044", "HC1094", "HC1322", "BIN_FC9006152", "HC1581", "HC382", "BIN_FC4006152", "HC1036", "BIN_FC3006153", "BIN_FC8006153", "HC648", "BIN_FC3006177", "BIN_FC6006177", "FH1220", "BIN2443", "HC221", "HC652", "BIN23067", "BIN2188", "BIN_FC4001747", "HC1233", "HC352", "HC125", "HC607", "HC497", "BIN2473", "HC620", "HC868", "HC1209", "HC26", "cancer1003", "cancer1060", "HC646", "HC332", "BIN_FC10001707", "HC1159", "HC1213", "HC91","HC321", "HC185", "HC1158", "BIN23069", "HC900", "cancer1041", "HC853", "BIN22127", "BIN2453", "BIN1950", "FH1065", "HC215", "HC700", "BIN_FC1006153", "BIN_FC6006153", "BIN23066", "HC337", "HC96", "HC156", "HC1024", "HC78", "HC136", "BIN_FC10002492", "HC1236", "BIN2316", "HC1211"),Plot=c("Mineral metabolism disorder","Rhinitis/eczema","Rhinitis/eczema 2","Hiatal hernia","Varicose veins","Anxiety Rx","Vulvovaginitis","MS","MS 2","HSV infection","VZV infection","Sarcoidosis","Sarcoidosis 2","Sarcoidosis 3","SLE","Celiac disease","Dentures","Hyperthyroid thyrotoxicosis","Hyperthyroid thyrotoxicosis 2","Malabsorption","Celiac disease 2","Rheumatoid arthritis 2","Rheumatoid arthritis","Ankylosing spondylitis 2","Ankylosing spondylitis", "Paracetamol use","Ibuprofen use","Ibuprofen use 2","Vitiligo","Mouth ulcers","UC 2","UC","Elevated rheumatoid factor","Psoriasis","Insulin","Hypothyroidism","Hypothyroidism 2","Allergic rhinitis","Allergic rhinitis 2","Enlarged prostate","Prostate cancer","Inguinal hernia","Enlarged prostate 2","Asthma","Asthma 2","Asthma 3","Asthma 4","Asthma 5","Diabetes Rx (F)","Insulin 2","Diabetes 5","Diabetes Rx (M)","Insulin 3","Diabetes 1","Diabetes 2","Diabetes 3","Diabetes 4","MCV seropositivity","Chronic illness","Brown hair","SLE 2","SLE 3","Anemia","Anemia 2","STI","Other serious disability","Anemia 3","Iridocyclitis","Reactive arthropathies","Iritis","Skin cancer","Non-melanoma skin cancer","Thyroiditis","PTSD","Right handedness","Psoriasis 2","Psoriatic arthropathies","Psoriatic arthropathy 2","Sjogren's","Cellulitis","Dermatitis","HPV18 seropositivity","Otitis externa","Cervical cancer","Stye","Asthma 6","Cancer","Sensitivity","Hypertension 2","Hypertension","Lipidemia","Cholesterol Rx (F)","Cholesterol Rx","JCV seropositivity","Type 1 Diabetes","Polymyalgia rheumatica","Nasal polyps","Nasal polyps 2","Arthritis","Connective tissue disorder","Other Rx","Connective tissue disorder 2","Wheezing","Seropositive RA"))
   melted_df <- left_join(melted_df,trait_annotations,by=c("traits"))
+  
+  # Remove redundant traits and rename remaining accordingly
+  if (bnum == 1) {
+    melted_df <- melted_df %>% filter(!(traits %in% c("HC170","HC639","HC1132","BIN_FC8006154","BIN_FC2006154")))
+    melted_df$Plot[melted_df$traits == "BIN22133"] <- "Sarcoidosis"
+    melted_df$Plot[melted_df$traits == "HC303"] <- "Malabsorption"
+    melted_df <- melted_df[!grepl(" (2|3)$", melted_df$Plot), ]
+  } else if (bnum == 2){
+    melted_df <- melted_df %>% filter(!(traits %in% c("BIN_FC3006153","BIN_FC8006153","BIN_FC10002986","HC648","BIN_FC3006177",
+                                                      "FH1220","HC221","HC652","HC1132","HC170","HC639","BIN_FC10001707","BIN_FC4001747","HC1233")))
+    melted_df$Plot[melted_df$traits == "BIN22133"] <- "Sarcoidosis"
+    melted_df$Plot[melted_df$traits == "HC303"] <- "Malabsorption"
+    melted_df$Plot[melted_df$traits == "BIN2443"] <- "Diabetes"
+    melted_df$Plot[melted_df$traits == "HC352"] <- "SLE"
+    melted_df <- melted_df[!grepl(" (2|3|4|5)$", melted_df$Plot), ]
+  } else if (bnum == 3){
+    melted_df <- melted_df %>% filter(!(traits %in% c("HC1021","HC1132","HC170","HC639","BIN_FC9006152","BIN1950","BIN_FC1006153","HC700","BIN_FC3006153", "BIN_FC8006153","BIN_FC10002986", "HC648",
+                "BIN_FC3006177","FH1220", "HC221","HC652","HC337")))
+    melted_df$Plot[melted_df$traits == "BIN22133"] <- "Sarcoidosis"
+    melted_df$Plot[melted_df$traits == "HC303"] <- "Malabsorption"
+    melted_df$Plot[melted_df$traits == "BIN2443"] <- "Diabetes"
+    melted_df$Plot[melted_df$traits == "HC49"] <- "Allergic rhinitis"
+    melted_df$Plot[melted_df$traits == "BIN22127"] <- "Asthma"
+    melted_df$Plot[melted_df$traits == "BIN_FC6006153"] <- "Cholesterol lowering Rx"
+    melted_df <- melted_df[!grepl(" (2|3|4|5)$", melted_df$Plot), ]
+  }
+  
+  # Set factors
   melted_df$Plot <- factor(melted_df$Plot,levels=unique(melted_df$Plot))
   
   # Reformat hap groups
   melted_df$variable <- gsub("X","",melted_df$variable)
+  melted_df$variable <- factor(melted_df$variable,levels=unique(melted_df$variable))
   
   # Plot the heatmap using ggplot2
   ggplot(melted_df, aes(x = Plot, y = variable, fill = value)) + # x=traits
@@ -521,6 +551,20 @@ for (bnum in blocks){
   ggsave(paste0("/oak/stanford/groups/pritch/users/courtrun/hla_ukbb/figures/hb",bnum,"hapheatmap.tiff"),height=10,width=20)
   
   # Save plotted data
-  data.table::fwrite(melted_df %>% rename(hapgroup=variable,Z=value,LONG_NAME=GBE_NAME),paste0(nsnp_dir,"hb",bnum,"_heatmapplotted.txt"), row.names = F, quote = F, sep = ",")
+  data.table::fwrite(melted_df %>% rename(hapgroup=variable,Z=value,LONG_NAME=GBE_NAME) %>% mutate(block=bnum),paste0(nsnp_dir,"hb",bnum,"_heatmapplotted.txt"), row.names = F, quote = F, sep = ",")
+  
+  # Save uncut data
+  znocut$traits <- rownames(znocut)
+  melted_df_nocut <- reshape2::melt(znocut)
+  melted_df_nocut <- melted_df_nocut %>% filter(traits %in% melted_df$traits) # same traits as in plot
+  melted_df_nocut <- left_join(melted_df_nocut,trait_annotations,by=c("traits")) # add annotation info
+  melted_df_nocut <- melted_df_nocut %>% left_join(sigtraitinfo,by=c("traits"="trait")) # add annotation info
+  melted_df_nocut$variable <- gsub("X","",melted_df_nocut$variable) # reformat hap groups
+  
+  data.table::fwrite(melted_df_nocut %>% rename(hapgroup=variable,Z=value,LONG_NAME=GBE_NAME) %>%
+                       mutate(block=bnum) %>%
+                       select(traits,hapgroup,Z,LONG_NAME,N,Plot,block),paste0(nsnp_dir,"hb",bnum,"_heatmapplotted_nocut.txt"), row.names = F, quote = F, sep = ",")
   
 }
+
+
