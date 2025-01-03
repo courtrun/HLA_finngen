@@ -8,7 +8,6 @@ nsnps= c(1000)
 
 for (nsnp in nsnps){
   for (bnum in blocks){
-    hla_dir="/home/ivm/haplo_analysis/"
     nsnp_dir=paste0(hla_dir,"snps",nsnp,"/")
     setwd(nsnp_dir)
     
@@ -224,7 +223,7 @@ for (nsnp in nsnps){
     # Add in covariate info
     #covariates and traits
     cov<-fread("/finngen/library-red/finngen_R10/analysis_covariates/R10_COV_PHENO_V1.txt.gz")
-    #traits<-fread("/finngen/green/courtrun/finngen_traits.txt",header=F) %>% rename(trait=V1) # /home/ivm/from_satu/general_files/R10_condit_results.txt
+    #traits<-fread("/finngen/green/courtrun/finngen_traits.txt",header=F) %>% rename(trait=V1)
     traits <- fread("/finngen/green/courtrun/finngen_R10_endpoint_core_noncore_1.0.txt") %>%
       filter(CORE_ENDPOINTS=="yes") %>% select(NAME) %>% rename(trait=NAME)
     traits<-traits[!duplicated(traits$trait),]
