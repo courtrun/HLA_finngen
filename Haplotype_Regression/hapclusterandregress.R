@@ -3,15 +3,15 @@
 
 library(dplyr)
 
-an <- data.table::fread("/home/ivm/from_satu/general_files/rsids.txt.gz")
+an <- data.table::fread("rsids.txt.gz")
 
 blocks=c("1","2","3")
 
 for (bnum in blocks) {
-  snps <- data.table::fread(paste0("/home/ivm/from_satu/hbg_full_sets/hbg",bnum,"_full.tsv"),header=F)
+  snps <- data.table::fread(paste0("hbg",bnum,"_full.tsv"),header=F)
   filt <- filter(an,rsids %in% snps$V1 & rsids!="")
   filtan <- filt %>% mutate(V1=paste0("chr",`#chrom`,"_",pos,"_",ref,"_",alt)) %>% select(V1)
-  data.table::fwrite(filtan, paste0("/home/ivm/from_satu/hbg_full_sets/hbg",bnum,"_maf.txt"), row.names = F, col.names=F, quote = F, sep = "\t")
+  data.table::fwrite(filtan, paste0("hbg",bnum,"_maf.txt"), row.names = F, col.names=F, quote = F, sep = "\t")
 }
 
 ##
@@ -31,12 +31,11 @@ nsnps= c(1000)
 
 for (nsnp in nsnps){
   for (bnum in blocks){
-    hla_dir="/home/ivm/haplo_analysis/"
     nsnp_dir=paste0(hla_dir,"snps",nsnp,"/")
     setwd(nsnp_dir)
 
     # Load in snps in the block, randomly subset
-    hb_all<-fread(paste0("/home/ivm/from_satu/hbg_full_sets/hbg",bnum,"_maf.txt"), header = F) # all snps in the block w/ MAF > 1%
+    hb_all<-fread(paste0("hbg",bnum,"_maf.txt"), header = F) # all snps in the block w/ MAF > 1%
     hb_all_snp <- hb_all[grep("^chr6_\\d+_[A-Z]_[A-Z]$", hb_all$V1), , drop = FALSE] # make sure just single nucleotide to single nucleotide
     set.seed(nsnp)
     hb<-hb_all_snp %>% sample_n(nsnp)
@@ -50,13 +49,11 @@ for (nsnp in nsnps){
 ########### Code for extracting the haplotype individual data for these snps on the terminal in dif formats; uncomment and run on terminal (unix not R)
 ####### Create the genotype file for the snps in this block with the alleles (A,T,C,Gs)
 ##extract the snps with PLINK
-##cd /home/ivm/haplo_analysis/snps1000
-##plink --bfile /finngen/library-red/finngen_R10/genotype_plink_1.0/data/finngen_R10 --keep-allele-order --keep /home/ivm/from_satu/general_files/individuals2.txt --recode --extract hb3_snps.txt --out hb3_genotypes
-##plink --bfile /finngen/library-red/finngen_R10/genotype_plink_1.0/data/finngen_R10 --keep-allele-order --keep /home/ivm/from_satu/general_files/individuals2.txt --recode --extract hb2_snps.txt --out hb2_genotypes
-##plink --bfile /finngen/library-red/finngen_R10/genotype_plink_1.0/data/finngen_R10 --keep-allele-order --keep /home/ivm/from_satu/general_files/individuals2.txt --recode --extract hb1_snps.txt --out hb1_genotypes
+##plink --bfile /finngen/library-red/finngen_R10/genotype_plink_1.0/data/finngen_R10 --keep-allele-order --keep general_files/individuals2.txt --recode --extract hb3_snps.txt --out hb3_genotypes
+##plink --bfile /finngen/library-red/finngen_R10/genotype_plink_1.0/data/finngen_R10 --keep-allele-order --keep general_files/individuals2.txt --recode --extract hb2_snps.txt --out hb2_genotypes
+##plink --bfile /finngen/library-red/finngen_R10/genotype_plink_1.0/data/finngen_R10 --keep-allele-order --keep general_files/individuals2.txt --recode --extract hb1_snps.txt --out hb1_genotypes
 
 ###### Create the genotype file for the snps in this block as 0s and 1s
-##cd /home/ivm/haplo_analysis/snps1000
 ##plink --recode 01 transpose --file hb1_genotypes --output-missing-genotype 2 --out hb1_genotypes01
 ##plink --recode 01 transpose --file hb2_genotypes --output-missing-genotype 2 --out hb2_genotypes01
 ##plink --recode 01 transpose --file hb3_genotypes --output-missing-genotype 2 --out hb3_genotypes01
@@ -77,7 +74,6 @@ nsnps= c(1000)
 
 for (nsnp in nsnps){
   for (bnum in blocks){
-    hla_dir="/home/ivm/haplo_analysis/"
     nsnp_dir=paste0(hla_dir,"snps",nsnp,"/")
     setwd(nsnp_dir)
 
@@ -293,7 +289,7 @@ for (nsnp in nsnps){
     # Add in covariate info
     #covariates and traits
     cov<-fread("/finngen/library-red/finngen_R10/analysis_covariates/R10_COV_PHENO_V1.txt.gz")
-    traits<-fread("/home/ivm/from_satu/general_files/R10_condit_results.txt")
+    traits<-fread("general_files/R10_condit_results.txt")
     traits<-traits[!duplicated(traits$trait),]
     traits<-traits[,c(trait)]
     rest<-c("FINNGENID","AGE_AT_DEATH_OR_END_OF_FOLLOWUP","SEX_IMPUTED","PC1","PC2","PC3","PC4","PC5","PC6","PC7","PC8","PC9","PC10")
