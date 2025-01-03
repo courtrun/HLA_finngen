@@ -1,6 +1,6 @@
 # HLA_finngen
 
-Scripts for HLA analysis in FinnGen data by Courtney Smith et al. Data generated from this study are available at https://doi.org/10.5281/zenodo.12763469, preprint at https://www.medrxiv.org/content/10.1101/2024.07.29.24311183v1.
+Scripts for HLA analysis in FinnGen data by Courtney Smith et al. Data generated from this study are available at https://zenodo.org/records/14165637, preprint at https://www.medrxiv.org/content/10.1101/2024.07.29.24311183v1.
 
 Directory Overview
 - Genetic_Correlations: Running LDSC genetic correlation
