@@ -25,10 +25,14 @@ genome_SNP=9727032
 
 hits <-  hits %>% mutate(HLA_SNP=41234,genome_SNP=9727032)
 
+# filter to just pruned trait list
+ptl <- data.table::fread("/oak/stanford/groups/pritch/users/courtrun/projects/hla/data/prunedalltraitsforenrichment.txt")
+hits <- filter(hits,trait %in% ptl$traits)
+
 # Across all traits
-(mean(hits$HLA_hits)/HLA_SNP)/(mean(hits$non_HLA_hits)/genome_SNP) # 18.0
-mean(hits$HLA_hits) # 1.03
-mean(hits$non_HLA_hits) # 13.5
+(mean(hits$HLA_hits)/HLA_SNP)/(mean(hits$non_HLA_hits)/genome_SNP) # 23.9
+mean(hits$HLA_hits) # 1
+mean(hits$non_HLA_hits) # 9.9
 
 ### Add in finngen annotations
 an <- data.table::fread("/oak/stanford/groups/pritch/users/courtrun/projects/hla/data/FINNGEN_ENDPOINTS_DF10_Final_2022-05-16_public.txt")
@@ -50,12 +54,11 @@ mutate(plotnames=ifelse(combine=="",group_name,supergroup_name))
 
 t <- left_join(t,tg,by=c("group")) %>% rename(fg_group=group,group=plotnames)
 #t <- t %>% mutate(se_HLA=sd_HLA_hits/sqrt(n),se_non_HLA=sd_non_HLA_hits/sqrt(n))
-OUTPUT_FILE="/oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/enrichment/enrich_trait_group_annotations.txt"
+OUTPUT_FILE="/oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/enrichment/enrich_trait_group_annotations_prunedtraits.txt"
 write.table(t, OUTPUT_FILE, quote=F, sep="\t", row.names=F, col.names=T)
 
 t <- distinct(t %>% select(-fg_group,-group_name)) # want to only count each trait one time per group so remove within group duplicates
 
-#tm <- t %>% group_by(group) %>% summarize(HLA_hits=mean(HLA_hits),sd_HLA_hits=sd(HLA_hits),non_HLA_hits=mean(non_HLA_hits),sd_non_HLA_hits=sd(non_HLA_hits))
 tm <- t %>% group_by(group) %>% summarize(sd_HLA_hits=sd(HLA_hits),sd_non_HLA_hits=sd(non_HLA_hits),HLA_hits=mean(HLA_hits),non_HLA_hits=mean(non_HLA_hits)) %>% select(group,HLA_hits,sd_HLA_hits,non_HLA_hits,sd_non_HLA_hits)
 tm <- left_join(tm,t %>% group_by(group) %>% count(),by=c("group"))
 tm <-  tm %>% mutate(HLA_SNP=41234,genome_SNP=9727032) %>% mutate(enrich=(HLA_hits/HLA_SNP)/(non_HLA_hits/genome_SNP))
@@ -65,7 +68,7 @@ tm %>% filter(enrich<1 & n>5)
 e <- tm %>% select(group,enrich,n) %>% filter(n>5) # %>% filter(n>=20)
 e <- left_join(e,tm,by=c("group","n","enrich"))
 
-OUTPUT_FILE="/oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/enrichment/enrichHLA_bygroup_finngenan.txt"
+OUTPUT_FILE="/oak/stanford/groups/pritch/users/courtrun/projects/hla/scripts/enrichment/enrichHLA_bygroup_finngenan_prunedtraits.txt"
 write.table(e, OUTPUT_FILE, quote=F, sep="\t", row.names=F, col.names=T)
 
 #### Enrichments overall across traits
@@ -73,9 +76,9 @@ t$allgroup <- "allgroup"
 tm <- t %>% group_by(allgroup) %>% summarize(HLA_hits=mean(HLA_hits),sd_HLA_hits=sd(HLA_hits),non_HLA_hits=mean(non_HLA_hits),sd_non_HLA_hits=sd(non_HLA_hits))
 tm <- left_join(tm,t %>% group_by(allgroup) %>% count(),by=c("allgroup"))
 tm <-  tm %>% mutate(HLA_SNP=41234,genome_SNP=9727032) %>% mutate(enrich=(HLA_hits/HLA_SNP)/(non_HLA_hits/genome_SNP))
-tm$enrich # enrichment overall across all traits, 17.14198
+tm$enrich # enrichment overall across all traits, 22.1
 
 tm <- t %>% filter(group!="Infectious") %>% group_by(allgroup) %>% summarize(HLA_hits=mean(HLA_hits),sd_HLA_hits=sd(HLA_hits),non_HLA_hits=mean(non_HLA_hits),sd_non_HLA_hits=sd(non_HLA_hits))
 tm <- left_join(tm,t  %>% filter(group!="Infectious") %>% group_by(allgroup) %>% count(),by=c("allgroup"))
 tm <-  tm %>% mutate(HLA_SNP=41234,genome_SNP=9727032) %>% mutate(enrich=(HLA_hits/HLA_SNP)/(non_HLA_hits/genome_SNP))
-tm$enrich # enrichment overall across all traits EXCEPT the infectious  traits, 16.60683
+tm$enrich # enrichment overall across all traits EXCEPT the infectious  traits, 21.5
